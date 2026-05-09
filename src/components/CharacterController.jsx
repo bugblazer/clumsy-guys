@@ -60,8 +60,10 @@ export const CharacterController = ({
       cameraLookAt.current.lerp(rbPosition, 0.05);
       camera.lookAt(cameraLookAt.current);
       const worldPos = rbPosition;
+      if (cameraPosition.current) {
         cameraPosition.current.getWorldPosition(worldPos);
         camera.position.lerp(worldPos, 0.05);
+      }
     }
 
     if (stage !== "game") {
