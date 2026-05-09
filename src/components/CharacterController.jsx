@@ -40,7 +40,16 @@ export const CharacterController = ({
   const cameraLookAt = useRef();
 
   useFrame(({ camera }) => {
+    const dead = state.getState("dead");
     if (stage === "lobby") {
+      return;
+    }
+    if (!rb.current) {
+      return;
+    }
+    if (dead) {
+      rb.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      rb.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
       return;
     }
     if ((player && !isDead) || firstNonDeadPlayer) {
@@ -51,8 +60,10 @@ export const CharacterController = ({
       cameraLookAt.current.lerp(rbPosition, 0.05);
       camera.lookAt(cameraLookAt.current);
       const worldPos = rbPosition;
-      cameraPosition.current.getWorldPosition(worldPos);
-      camera.position.lerp(worldPos, 0.05);
+      if (cameraPosition.current) {
+        cameraPosition.current.getWorldPosition(worldPos);
+        camera.position.lerp(worldPos, 0.05);
+      }
     }
 
     if (stage !== "game") {
@@ -165,7 +176,7 @@ export const CharacterController = ({
   });
 
   const startingPos = state.getState("startingPos");
-  if (isDead || !startingPos) {
+  if (!startingPos) {
     return null;
   }
 
@@ -190,15 +201,16 @@ export const CharacterController = ({
       gravityScale={stage === "game" ? 2.5 : 0}
       name={player ? "player" : "other"}
     >
-      <group ref={cameraPosition} position={[0, 8, -16]}></group>
-      <Character
-        scale={0.42}
-        color={state.state.profile.color}
-        name={state.state.profile.name}
-        position-y={0.2}
-        animation={animation}
-      />
-      <CapsuleCollider args={[0.1, 0.38]} position={[0, 0.68, 0]} />
+  <group visible={!state.getState("dead")}>
+    <Character
+      scale={0.42}
+      color={state.state.profile.color}
+      name={state.state.profile.name}
+      position-y={0.2}
+      animation={animation}
+    />
+    <CapsuleCollider args={[0.1, 0.38]} position={[0, 0.68, 0]} />
+  </group>
     </RigidBody>
   );
 };
